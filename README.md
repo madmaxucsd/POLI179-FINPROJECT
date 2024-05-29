@@ -3,7 +3,10 @@
 This project seeks to explore how different ideological projection onto real-world events generates different levels of engagement and response over Twitter
 
 # Project Outline
-Original Dataframe (current stage, waiting on X API) construction of a unique database of tweets referencing Jan 6th
+Original Dataframe (current stage) construction of a unique database of tweets referencing Jan 6th
+    Signed up for Twitter API
+    Building a dataframe in R using twitter extraction methods found in https://github.com/SMAPPNYU/smappR.git
+    NEXT: Upload dataframe to Python
 
 Sentiment Analysis . Use BERT sentence model to train a deep learning model to assign sentiment analysis to datapoints
 
