@@ -1,0 +1,26 @@
+install.packages("rtweet")
+install.packages("dplyr")
+
+library(rtweet)
+
+api_key <- "qC28oMn9WpXScEeTPmAzwVbIq"
+api_secret_key <- "jemDzCleVROWlb1nZndYwJlo72LaDdFrFV8lpy61TglTo7xDoV"
+access_token <- "1795600523741319168-icr0SqgtweTaIo7TfsZtJBcG0x1saf"
+access_token_secret <- "mvnEBeDP5guyP4drIOIVce45WyyUkELJO5OUeTDFxoqQx"
+
+create_token(
+  app = "1795627900802342912MadMaxAPI",
+  consumer_key = api_key,
+  consumer_secret = api_secret_key,
+  access_token = access_token,
+  access_secret = access_token_secret
+)
+
+tweets <- search_tweets("#insurrection", n = 1000)
+tweets_q1 <- search_tweets("#january 6", n = 1000)
+tweets_q2 <- search_tweets("#capital riot", n = 1000)
+
+library(dplyr)
+FINPROJ_DATASET <- bind_rows(tweets, tweets_q1, tweets_q2)
+
+write.csv(FINPROJ_DATASET, "finprojdataset.csv", row.names = FALSE)
