@@ -1,0 +1,73 @@
+import pandas as pd
+import os
+import transformers
+import torch
+
+file_path = '/content/project_data.csv'
+
+if not os.path.exists(file_path):
+    print(f"File not found: {file_path}")
+else:
+    df = pd.read_csv(file_path)
+    print(df.head())
+
+df.pop('user_name')
+df.pop('location_name')
+df.pop('latitude')
+df.pop('longitude')
+df.pop('query')
+
+from transformers import BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
+def tokenize_text(text):
+    return tokenizer.encode_plus(
+        text,
+        add_special_tokens=True,
+        max_length=128,  # Adjust as needed
+        padding='max_length',
+        truncation=True,
+        return_attention_mask=True,
+        return_tensors='pt'  # Return PyTorch tensors
+    )
+
+# Tokenize all tweet texts
+tokenized_texts = df['text'].apply(tokenize_text)
+
+# Convert tokenized output to tensors
+input_ids = torch.cat([tokenized_texts[i]['input_ids'] for i in range(len(tokenized_texts))], dim=0)
+attention_masks = torch.cat([tokenized_texts[i]['attention_mask'] for i in range(len(tokenized_texts))], dim=0)
+
+from transformers import BertForSequenceClassification, AdamW, get_scheduler
+
+# Load pre-trained BERT model
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=3)
+
+# Set device (GPU if available, otherwise CPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+# Prediction function
+def predict_ideology(text):
+    inputs = tokenize_text(text)
+    input_ids = inputs['input_ids'].to(device)
+    attention_mask = inputs['attention_mask'].to(device)
+    
+    with torch.no_grad():
+        outputs = model(input_ids, attention_mask=attention_mask)
+    
+    logits = outputs.logits
+    predicted_class = torch.argmax(logits, dim=1).item()
+    
+    # Map predicted class back to ideology label
+    label_to_ideology = {0: 'Liberal', 1: 'Conservative', 2: 'Neutral'}
+    predicted_ideology = label_to_ideology[predicted_class]
+    
+    return predicted_ideology
+
+# Apply prediction function to each tweet
+df['predicted_ideology'] = df['text'].apply(predict_ideology)
+
+# Display dataframe with predicted ideologies
+print(df.head())
