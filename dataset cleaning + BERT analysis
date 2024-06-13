@@ -71,3 +71,4 @@ df['predicted_ideology'] = df['text'].apply(predict_ideology)
 
 # Display dataframe with predicted ideologies
 print(df.head())
+
